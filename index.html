@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Canvas</title>
+    <style type="text/css">
+        
+        *{
+            margin:0px;
+            padding:0px;
+        }
+        body{
+            position: absolute;
+            top: 0px;
+            left:0px;
+            bottom:0px;
+            right:0px;
+        }
+        #canvasbox{
+            height:100%;
+        }
+        #canvas{
+            width:100%;
+            height:100%;
+        }
+    </style>
+</head>
+<body onolad="onload">
+    <div id='canvasbox'>
+        <canvas id='canvas'>
+        
+        </canvas>
+    </div>
+    
+</body>
+<script type="text/javascript">
+window.onload = function(){
+    var width = document.getElementById("canvasbox").clientWidth, height=document.getElementById("canvasbox").clientHeight;
+    var canvas = document.getElementById('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    var spotArry = [];
+    var path = 10;
+    var arc_r = 10;
+    var area = 500;
+    var speed = 0.64;
+    var allspot = 20;
+    var current = "PLAY";
+    var ctx = canvas.getContext('2d');
+    function initCanvas(){
+        ctx.fillStyle="#f7fafc";
+        ctx.fillRect(0,0,width,height);
+    }
+    initCanvas();
+    function spot(x, y, r, color, _x, _y){
+        this.x = x;
+        this.y = y;
+        this.index = spotArry.length;
+        this.r = r;
+        this._x = _x;
+        this._y = _y;
+        this.color = color;
+        this.draw = function(){
+            this.rebound();
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,this.r,0,10*Math.PI);
+            ctx.fillStyle=this.color;
+            ctx.fill();
+            ctx.beginPath()
+            ctx.arc(this.x,this.y,this.r+path,0,10*Math.PI);
+            ctx.strokeStyle=this.color;
+            ctx.stroke();
+        }
+        this.rebound = function(){
+            if(this.x-arc_r-path <= 0 || this.x+arc_r+path >= width){
+                this._x = -this._x;
+            }
+            if(this.y-arc_r-path <= 0 || this.y+arc_r+path >= height){
+                this._y = -this._y;
+            }
+            this.x+=this._x;
+            this.y+=this._y;
+        }
+    }
+    function start(){
+        for(var i = 0; i< allspot ;i++){
+            initSpot();
+            // spotArry[i].draw();
+        }
+        setTimeout(function(){
+            play()
+        }, 0) 
+    }
+    function spotArryDraw(){
+        var length = spotArry.length;
+        spotArry.forEach(function(item){
+            item.draw();
+            for(var i = item.index; i < length; i++){
+                var spot = spotArry[i]
+                if(Math.pow(item.x - spot.x,2)+ Math.pow(item.y - spot.y,2)<= Math.pow(area,2)){
+                    ctx.beginPath();
+                    ctx.moveTo(item.x,item.y);
+                    ctx.lineTo(spot.x,spot.y);
+                    ctx.stroke()
+                }
+            }
+        })
+    }
+    function initSpot(){
+        var x = Number.parseInt(Math.random()*(width-arc_r-path));
+        var y = Number.parseInt(Math.random()*(height-arc_r-path));
+        if(x < arc_r+path){
+            x = arc_r+path+x;
+        }
+        if(y < arc_r+path){
+            y = arc_r+path+y;
+        }
+        var _x = Number(Number.parseFloat(Math.random()*speed).toFixed(2));
+        var _y = Number(Math.sqrt(speed*speed-_x*_x).toFixed(2));
+        var mark = Math.random();
+        if(mark>0 && mark<=0.25){
+            _x = -_x;
+            _y = _y;
+        }
+        if(mark>0.25 && mark<=0.5){
+            _y = -_y;
+            _x = _x;
+        }
+        if(mark>0.5 && mark<=0.75){
+            _x = -_x;
+            _y = -_y;
+        }
+        // var r = Number.parseInt(Math.random()*255);
+        // var g = Number.parseInt(Math.random()*255);
+        // var b = Number.parseInt(Math.random()*255);
+        // var color = "rgb("+r+","+g+","+b+")";
+        var color = "#e0e0e0"
+        spotArry.push(new spot(x, y,arc_r, color, _x, _y));
+    }
+    start();
+    function clear(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    function gameEngine() {
+        switch (current) {
+            case "PLAY":
+                clear();
+                initCanvas();
+                spotArryDraw();
+                break;
+          
+                break;    
+        }
+        
+    }
+    function play(){
+        var allNumber = 10000;
+        var indexaa = 0;
+        var timer = requestAnimationFrame(function fn(){
+        if(indexaa < allNumber){
+            gameEngine();
+            indexaa+=20;
+            timer = requestAnimationFrame(fn);
+            
+        }else{
+            indexaa = 0;
+            gameEngine();
+            timer = requestAnimationFrame(fn);
+            // cancelAnimationFrame(timer);
+        }
+        });
+    }
+}
+    
+    
+    
+    // setInterval(gameEngine, 20);
+</script>
+</html>
